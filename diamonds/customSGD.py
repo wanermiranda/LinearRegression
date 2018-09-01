@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import math
 from sklearn.utils import shuffle
-
+from sklearn.datasets import make_regression
 
 def get_batch(X, y, b_it, b_sz, epoch):
     b_ct = int(X.shape[0]/b_sz)
@@ -88,6 +88,9 @@ def get_toy_data():
     X = np.array([[4., 7.], [2., 6.]], dtype='float64')
     return X, y
 
+def get_toy_data_big():
+    return make_regression(n_samples=50000, n_features=25, noise=0.5)
+
 
 def SGD(lr, max_iter, X, y, lr_optimizer=None,
         epsilon=0.001, power_t=0.25, t=1.0,
@@ -110,13 +113,17 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
     error = 1
     it = 0
     epoch = 0
-    lst_epoch = -1
+    lst_epoch = 0
     b_it = 0
 
     if batch_type == 'Full':
         b_sz = nsamples
     else:  # Mini or Stochastic
         b_sz = batch_sz
+
+    if batch_type == 'Stochastic':
+        X, y = shuffle(X, y)
+        print ('Shuffled')
 
     while ((error > epsilon) and (it < max_iter)):
         if lr_optimizer == 'invscaling':
@@ -127,13 +134,12 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
         X_ = np.zeros(0)
         y_ = np.zeros(0)
         while y_.shape[0] == 0:
-            # Checking if it is a new epoch to shuffle the data.
+            # Checking if it is a new epoch to shuffle the data.            
+            X_, y_, b_it, epoch = get_batch(X, y, b_it, b_sz, epoch)
             if lst_epoch < epoch:
                 lst_epoch = epoch
                 if batch_type == 'Stochastic':
                     X, y = shuffle(X, y)
-                    print ('Shuffled')
-            X_, y_, b_it, epoch = get_batch(X, y, b_it, b_sz, epoch)
 
         h0 = hypothesis(theta, X_)
 
@@ -152,7 +158,8 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
         if (it % print_interval) == 0 or it == 1:
             print("It: %s Batch: %s Epoch %i Error: %.8f lr: %.8f " %
                   (it, b_it, epoch, error, eta))
-
+    print("Finished \n It: %s Batch: %s Epoch %i Error: %.8f lr: %.8f " %
+                  (it, b_it, epoch, error, eta))
     return theta
 
 
@@ -162,25 +169,46 @@ def predict(theta, X):
 
 
 def SGD_test():
-    X, y = get_toy_data()
+    X_, y_ = get_toy_data_big()
+    X,  X_val, y, y_val = model_selection.train_test_split(X_, y_, test_size=0.2, random_state=42)
     print("X values ")
     print(X)
     lr = .01
     max_iter = 50
+    batch_sz = 100
+    
+    print ("")
     print ("Full batch")
-    theta = SGD(lr, max_iter, X, y, batch_type='Full', print_interval=1)
-    y_hat = predict(theta, X)
-    error = math.sqrt(((y_hat-y)**2).mean())
-    print("RMSE error: %.4f" % error)
 
+    theta = SGD(lr, max_iter, X, y, batch_type='Full', print_interval=100)
+    y_pred = predict(theta, X_val)
+    print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
+    print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
+    print('R2: %.3f' % metrics.r2_score(y_val, y_pred))
+
+
+    print ("")
     print ("Stochastic Mini batch")
-    theta = SGD(lr, max_iter, X, y, batch_type='Stochastic', batch_sz=1, print_interval=1)
-    y_hat = predict(theta, X)
-    error = math.sqrt(((y_hat-y)**2).mean())
-    print("RMSE error: %.4f" % error)
+    theta = SGD(lr, max_iter, X, y, batch_type='Stochastic', batch_sz=batch_sz, print_interval=100)
+    y_pred = predict(theta, X_val)
+    print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
+    print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
+    print('R2: %.3f' % metrics.r2_score(y_val, y_pred))
 
+    print ("")
     print ("Mini batch")
-    theta = SGD(lr, max_iter, X, y, batch_type='Mini',  batch_sz=1, print_interval=1)
-    y_hat = predict(theta, X)
-    error = math.sqrt(((y_hat-y)**2).mean())
-    print("RMSE error: %.4f" % error)
+    theta = SGD(lr, max_iter, X, y, batch_type='Mini',  batch_sz=batch_sz, print_interval=100)
+    y_pred = predict(theta, X_val)
+    print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
+    print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
+    print('R2: %.3f' % metrics.r2_score(y_val, y_pred))
+
+    print ("")
+    print ("Single Instance")
+    theta = SGD(lr, max_iter, X, y, batch_type='Single',  epsilon=10**-10, batch_sz=1, print_interval=100)
+    y_pred = predict(theta, X_val)
+    print(y_pred.shape, y_val.shape)
+    print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
+    print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
+    print('R2: %.3f' % metrics.r2_score(y_val, y_pred))
+
