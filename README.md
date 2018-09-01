@@ -7,7 +7,7 @@ Repository for the first Machine Learning project related to Linear Regression, 
 - Feature engineering
 - Feature Scaling — Fixed (Done)
   - Robust Scaler
-  - Gaussian Scale
+  - Gaussian Scalels
   - Quantiles (0.25, 0.75)
   - New Features (Done)
   - RatioXY
@@ -22,7 +22,7 @@ Repository for the first Machine Learning project related to Linear Regression, 
 
 ## Experimental Evaluation
 
-- Metrics Definition
+- Metrics Definition (Done)
   - MSE (mean square error)
   - RMSE (root-mean-square error)
   - MAE (mean absolute error)
