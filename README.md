@@ -40,6 +40,7 @@ Repository for the first Machine Learning project related to Linear Regression, 
   - Mini Batch.
   - Stochastic Batch.
   - Batch
+- Implement Normal Equation
 
 ## Experimental Execution Report (Sklearn vs Custom)
 
