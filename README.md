@@ -13,11 +13,11 @@ Repository for the first Machine Learning project related to Linear Regression, 
   - RatioXY
   - RatioXZ
   - Volume
-- Removing outliers --- Azael
+- Removing outliers --- (Done)
   - Removing samples with any features equal to 0
-- Run Scenario Exps K Fold CV with a fixed parameters
-  - Crude
-  - Scaled
+- Run Scenario Exps K Fold CV with a fixed parameters (Azael)
+  - Crude ## (Done) - Did not converge due to high avg. loss
+  - Scaled ## (Done) - Great results (R2: 0.904)
   - Add Sintect Features and run Sklearn Feature Selector
 
 ## Experimental Evaluation
@@ -40,6 +40,7 @@ Repository for the first Machine Learning project related to Linear Regression, 
   - Mini Batch.
   - Stochastic Batch.
   - Batch
+- Implement Normal Equation
 
 ## Experimental Execution Report (Sklearn vs Custom)
 
