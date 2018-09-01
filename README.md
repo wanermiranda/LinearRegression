@@ -5,17 +5,17 @@ Repository for the first Machine Learning project related to Linear Regression, 
 ## Data Exploratory Analysis
 
 - Feature engineering
-- Feature Scaling — Fixed ## (Done)
+- Feature Scaling — Fixed (Done)
   - Robust Scaler
   - Gaussian Scale
   - Quantiles (0.25, 0.75)
-  - New Features ## (Done)
+  - New Features (Done)
   - RatioXY
   - RatioXZ
   - Volume
-- Removing outliers --- ## (Done)
+- Removing outliers --- (Done)
   - Removing samples with any features equal to 0
-- Run Scenario Exps K Fold CV with a fixed parameters ## Azael
+- Run Scenario Exps K Fold CV with a fixed parameters (Azael)
   - Crude ## (Done) - Did not converge due to high avg. loss
   - Scaled ## (Done) - Great results (R2: 0.904)
   - Add Sintect Features and run Sklearn Feature Selector
