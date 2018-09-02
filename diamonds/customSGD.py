@@ -8,6 +8,8 @@ import os
 import math
 from sklearn.utils import shuffle
 from sklearn.datasets import make_regression
+import timeit
+import time 
 
 def get_batch(X, y, b_it, b_sz, epoch):
     b_ct = int(X.shape[0]/b_sz)
@@ -174,13 +176,15 @@ def SGD_test():
     print("X values ")
     print(X)
     lr = .01
-    max_iter = 50
+    max_iter = 2000
     batch_sz = 100
     
     print ("")
     print ("Full batch")
 
+    start = time.process_time()
     theta = SGD(lr, max_iter, X, y, batch_type='Full', print_interval=100)
+    print("finished ", time.process_time() - start)
     y_pred = predict(theta, X_val)
     print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
     print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
@@ -189,7 +193,9 @@ def SGD_test():
 
     print ("")
     print ("Stochastic Mini batch")
+    start = time.process_time()
     theta = SGD(lr, max_iter, X, y, batch_type='Stochastic', batch_sz=batch_sz, print_interval=100)
+    print("finished ", time.process_time() - start)
     y_pred = predict(theta, X_val)
     print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
     print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
@@ -197,7 +203,9 @@ def SGD_test():
 
     print ("")
     print ("Mini batch")
+    start = time.process_time()
     theta = SGD(lr, max_iter, X, y, batch_type='Mini',  batch_sz=batch_sz, print_interval=100)
+    print("finished ", time.process_time() - start)
     y_pred = predict(theta, X_val)
     print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
     print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
@@ -205,7 +213,9 @@ def SGD_test():
 
     print ("")
     print ("Single Instance")
+    start = time.process_time()
     theta = SGD(lr, max_iter, X, y, batch_type='Single',  epsilon=10**-10, batch_sz=1, print_interval=100)
+    print("finished ", time.process_time() - start)
     y_pred = predict(theta, X_val)
     print(y_pred.shape, y_val.shape)
     print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))

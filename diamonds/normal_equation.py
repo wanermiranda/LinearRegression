@@ -45,13 +45,16 @@ def normal_equation(X, y):
         theta = []
         print("Error! Matrix (Xt.X) has no inverse.")
     theta = np.array(theta)
-    print('Theta', theta)
     return theta
 
 
 def normal_equation_test():
-    X, y = customSGD.get_toy_data()
-    theta = normal_equation(X, y)
-    y_hat = customSGD.predict(theta, X)
-    error = math.sqrt(((y_hat-y)**2).mean())
-    print("RMSE error: %.4f" % error)
+	X_, y_ = customSGD.get_toy_data_big()
+	X,  X_val, y, y_val = model_selection.train_test_split(X_, y_, test_size=0.2, random_state=42)
+	theta = normal_equation(X, y)
+	y_pred = customSGD.predict(theta, X_val)
+	error = math.sqrt(((y_pred-y_val)**2).mean())
+	print("RMSE error: %.4f" % error)
+	print("MSE: %.3f" % metrics.mean_squared_error(y_val, y_pred))
+	print("MAE: %.3f" % metrics.mean_absolute_error(y_val, y_pred))
+	print('R2: %.3f' % metrics.r2_score(y_val, y_pred))
