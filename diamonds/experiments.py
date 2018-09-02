@@ -131,7 +131,16 @@ def kfold_evaluate(regr, folds, scoring, log_y=False, k=5):
         
         print("Evaluating %s" % (i))
         (X_train, X_val, y_train, y_val) = fold        
-        if regr:
+        if regr == "customSGD":
+            if log_y:
+                theta = customSGD.SGD(lr=0.1, max_iter=20000, 
+                X=X_train, y=np.log(y_train), lr_optimizer='invscaling', 
+                print_interval=2000)
+                y_pred = np.exp(customSGD.predict(theta, X_val))
+            else:
+                theta = normal_equation.normal_equation(X_train, y_train)
+                y_pred = customSGD.predict(theta, X_val)
+        elif regr: # Any other Regressor from the SkLearn Library
             regr.verbose = False
             if log_y:
                 regr.fit(X_train, np.log(y_train))
@@ -140,7 +149,6 @@ def kfold_evaluate(regr, folds, scoring, log_y=False, k=5):
             else:
                 regr.fit(X_train, y_train)
                 y_pred = regr.predict(X_val)
-
         else:
             if log_y:
                 theta = normal_equation.normal_equation(
