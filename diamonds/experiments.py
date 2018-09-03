@@ -247,3 +247,24 @@ def fit_evaluate_customSGD(train, test, params={}, log_y=False, scale=False, exc
         y_pred = customSGD.predict(theta, X_test)
 
     evaluate(y_test, y_pred)    
+
+
+def fit_eval_loss_customSGD(X_train, X_val, y_train, y_val, params={}, log_y=False, scale=False, exclude_features=None):
+    print("Evaluating ...")
+
+    if scale:
+        scaler = RobustScaler()
+        scaler.fit(X_train)
+        X_train = scaler.transform(X_train)
+        # Fit on train, transforming the test, avoid data leak
+        X_test = scaler.transform(X_val)
+
+    
+    if log_y:
+        theta = customSGD.SGD(**params,X=X_train, y=np.log(y_train))
+        y_pred = np.exp(customSGD.predict(theta, X_test))
+    else:
+        theta = customSGD.SGD(**params,X=X_train, y=y_train)
+        y_pred = customSGD.predict(theta, X_test)
+
+    evaluate(y_val, y_pred)    
