@@ -11,6 +11,14 @@ from sklearn.datasets import make_regression
 import timeit
 import time 
 
+__iteration_log = []
+
+def get_iteration_log():    
+    global __iteration_log    
+    df  = pd.DataFrame(__iteration_log, columns=['it', 'b_it', 'epoch', 'error', 'eta'])
+    df.set_index(df.it)
+    return df
+
 def get_batch(X, y, b_it, b_sz, epoch):
     b_ct = int(X.shape[0]/b_sz)
     y_ = np.zeros((0, 0))
@@ -126,7 +134,8 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
     if batch_type == 'Stochastic':
         X, y = shuffle(X, y)
         print ('Shuffled')
-
+    global __iteration_log 
+    __iteration_log = []
     while ((error > epsilon) and (it < max_iter)):
         if lr_optimizer == 'invscaling':
             eta = lr / pow(t, power_t)
@@ -160,8 +169,12 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
         if (it % print_interval) == 0 or it == 1:
             print("It: %s Batch: %s Epoch %i Error: %.8f lr: %.8f " %
                   (it, b_it, epoch, error, eta))
+        
+        __iteration_log.append((it, b_it, epoch, error, eta))
+
     print("Finished \n It: %s Batch: %s Epoch %i Error: %.8f lr: %.8f " %
                   (it, b_it, epoch, error, eta))
+    __iteration_log.append((it, b_it, epoch, error, eta))                      
     return theta
 
 
