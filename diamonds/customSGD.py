@@ -117,7 +117,7 @@ def SGD(lr, max_iter, X, y, lr_optimizer=None,
     nparams = shape[1]
     print("Number of parameters: "+str(nparams))
 
-    theta = np.random.uniform(size=nparams)
+    theta = np.zeros(nparams)
     theta_temp = np.ones(nparams)
 
     error = 1
