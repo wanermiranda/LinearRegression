@@ -47,7 +47,6 @@ def outliers_removal(train, test):
     if test:
         test = remove_zeros(test)
 
-
     train, _ = quantile_removal(train, test)
     return train, test
 
@@ -73,7 +72,7 @@ def load_test_data():
 
 def gen_splits(X, scale=True, exclude_features=None, k=5, test_size=.1):
     X, y = separate_X_y(X, exclude_features)
-    
+
     if test_size:
         X_train, X_test, y_train, y_test = model_selection.train_test_split(
             X, y, test_size=test_size, random_state=RANDOM_STATE)
@@ -86,7 +85,7 @@ def gen_splits(X, scale=True, exclude_features=None, k=5, test_size=.1):
         X_train_cv, X_val = X_train[train_index].copy(
         ), X_train[val_index].copy()
         y_train_cv, y_val = y_train[train_index].copy(
-        ), y_train[val_index].copy()        
+        ), y_train[val_index].copy()
         if scale:
             scaler = RobustScaler()
             scaler.fit(X_train_cv)
@@ -94,7 +93,6 @@ def gen_splits(X, scale=True, exclude_features=None, k=5, test_size=.1):
             # Fit on train, transforming the validation, avoid data leak
             X_val = scaler.transform(X_val)
 
-        
         folds.append((X_train_cv, X_val, y_train_cv, y_val))
 
     # The Scaler must be executed for the full train only after the folds are computed
@@ -107,6 +105,7 @@ def gen_splits(X, scale=True, exclude_features=None, k=5, test_size=.1):
         X_test = scaler.transform(X_test)
 
     return folds, (X_train, X_test, y_train, y_test)
+
 
 def separate_X_y(X, exclude_features):
     X = X.copy()
@@ -128,10 +127,19 @@ def kfold_evaluate(regr, folds, scoring, log_y=False, k=5):
     r2 = []
     i = 0
     for fold in folds:
-        
+
         print("Evaluating %s" % (i))
-        (X_train, X_val, y_train, y_val) = fold        
-        if regr:
+        (X_train, X_val, y_train, y_val) = fold
+        if regr == "customSGD":
+            if log_y:
+                theta = customSGD.SGD(lr=0.1, max_iter=20000,
+                X=X_train, y=np.log(y_train), lr_optimizer='invscaling',
+                print_interval=2000)
+                y_pred = np.exp(customSGD.predict(theta, X_val))
+            else:
+                theta = normal_equation.normal_equation(X_train, y_train)
+                y_pred = customSGD.predict(theta, X_val)
+        elif regr:  # Any other Regressor from the SkLearn Library
             regr.verbose = False
             if log_y:
                 regr.fit(X_train, np.log(y_train))
@@ -140,7 +148,6 @@ def kfold_evaluate(regr, folds, scoring, log_y=False, k=5):
             else:
                 regr.fit(X_train, y_train)
                 y_pred = regr.predict(X_val)
-
         else:
             if log_y:
                 theta = normal_equation.normal_equation(
@@ -182,8 +189,9 @@ def evaluate(y, y_pred):
     plt.xlabel('Predicted')
     plt.show()
 
+
 def fit_evaluate(regr, X_train, X_val, y_train, y_val, log_y=False, scale=False, exclude_features=None):
-    print("Evaluating ...")    
+    print("Evaluating ...")
     if y_val is None:
         X_train, y_train = separate_X_y(X_train, exclude_features)
         X_val, y_val = separate_X_y(X_val, exclude_features)
@@ -213,4 +221,50 @@ def fit_evaluate(regr, X_train, X_val, y_train, y_val, log_y=False, scale=False,
         else:
             theta = normal_equation.normal_equation(X_train, y_train)
             y_pred = customSGD.predict(theta, X_val)
+
     evaluate(y_val, y_pred)
+
+
+def fit_evaluate_customSGD(train, test, params={}, log_y=False, scale=False, exclude_features=None):
+    print("Evaluating ...")
+
+    X_train, y_train = separate_X_y(train, exclude_features)
+    X_test, y_test = separate_X_y(test, exclude_features)
+
+    if scale:
+        scaler = RobustScaler()
+        scaler.fit(X_train)
+        X_train = scaler.transform(X_train)
+        # Fit on train, transforming the test, avoid data leak
+        X_test = scaler.transform(X_test)
+
+    
+    if log_y:
+        theta = customSGD.SGD(**params,X=X_train, y=np.log(y_train))
+        y_pred = np.exp(customSGD.predict(theta, X_test))
+    else:
+        theta = customSGD.SGD(**params,X=X_train, y=y_train)
+        y_pred = customSGD.predict(theta, X_test)
+
+    evaluate(y_test, y_pred)    
+
+
+def fit_eval_loss_customSGD(X_train, X_val, y_train, y_val, params={}, log_y=False, scale=False, exclude_features=None):
+    print("Evaluating ...")
+
+    if scale:
+        scaler = RobustScaler()
+        scaler.fit(X_train)
+        X_train = scaler.transform(X_train)
+        # Fit on train, transforming the test, avoid data leak
+        X_test = scaler.transform(X_val)
+
+    
+    if log_y:
+        theta = customSGD.SGD(**params,X=X_train, y=np.log(y_train))
+        y_pred = np.exp(customSGD.predict(theta, X_test))
+    else:
+        theta = customSGD.SGD(**params,X=X_train, y=y_train)
+        y_pred = customSGD.predict(theta, X_test)
+
+    evaluate(y_val, y_pred)    
